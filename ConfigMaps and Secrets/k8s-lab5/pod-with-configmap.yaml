@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configmap-demo-pod
+  labels:
+    app: demo
+spec:
+  containers:
+  - name: demo-container
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
+    env:
+    # Use ConfigMap as environment variables
+    - name: DATABASE_HOST
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: database_host
+    - name: DATABASE_PORT
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: database_port
+    - name: APP_MODE
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: app_mode
+    volumeMounts:
+    # Mount ConfigMap as volume
+    - name: config-volume
+      mountPath: /etc/nginx/conf.d
+    - name: web-content
+      mountPath: /usr/share/nginx/html
+    - name: app-properties
+      mountPath: /etc/config
+  volumes:
+  - name: config-volume
+    configMap:
+      name: web-config
+      items:
+      - key: nginx.conf
+        path: default.conf
+  - name: web-content
+    configMap:
+      name: web-config
+      items:
+      - key: index.html
+        path: index.html
+  - name: app-properties
+    configMap:
+      name: app-properties
